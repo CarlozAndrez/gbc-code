@@ -30,7 +30,7 @@ public class MixedPlayer
 			// Decide what each child should do
 			for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
 			{
-				Game.Move move = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
+				Move move = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
 				move.writeAction(System.out);
 			}
 		}

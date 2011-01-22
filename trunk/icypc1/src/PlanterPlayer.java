@@ -27,7 +27,7 @@ public class PlanterPlayer
 			// Decide what each child should do
 			for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
 			{
-				Game.Move m = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
+				Move m = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
 				m.writeAction(System.out);
 			}
 		}
