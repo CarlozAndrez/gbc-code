@@ -1,9 +1,9 @@
 import java.awt.Point;
 
-public abstract class Strategy
+abstract class Strategy
 {
 
-	public abstract Game.Move chooseNextAction(Game game, Game.Child child);
+	public abstract Move chooseNextAction(Game game, Child child);
 
 	/** Return the value of x, clamped to the [ a, b ] range. */
 	private static int clamp(int x, int a, int b)
@@ -16,9 +16,9 @@ public abstract class Strategy
 	/**
 	 * Create a Game.Move action given a child and its intended destination.
 	 */
-	protected Game.Move moveToward(Game.Child child, Point target)
+	protected Move moveToward(Child child, Point target)
 	{
-		Game.Move m = new Game.Move();
+		Move m = new Move();
 		if (child.standing)
 		{
 			m = runToward(child, target);
@@ -30,35 +30,35 @@ public abstract class Strategy
 		return m;
 	}
 
-	private Game.Move crawlTowards(Game.Child child, Point target)
+	private Move crawlTowards(Child child, Point target)
 	{
-		Game.Move m;
+		Move m;
 
 		// Crawl to the destination
 		if (child.pos.x != target.x)
 		{
 			// crawl left or right
 			Point dest = new Point(child.pos.x + clamp(target.x - child.pos.x, -1, 1), child.pos.y);
-			m = new Game.Move("crawl", dest);
+			m = new Move("crawl", dest);
 		}
 		else if (child.pos.y != target.y)
 		{
 			// crawl up or down.
 			Point dest = new Point(child.pos.x, child.pos.y + clamp(target.y - child.pos.y, -1, 1));
-			m = new Game.Move("crawl", dest);
+			m = new Move("crawl", dest);
 
 		}
 		else
 		{
-			m = new Game.Move();
+			m = new Move();
 		}
 
 		return m;
 	}
 
-	private Game.Move runToward(Game.Child child, Point target)
+	private Move runToward(Child child, Point target)
 	{
-		Game.Move m;
+		Move m;
 
 		// Run to the destination
 		if (child.pos.x != target.x)
@@ -69,14 +69,14 @@ public abstract class Strategy
 				Point dest = new Point(child.pos.x + clamp(target.x - child.pos.x, -1, 1),
 				        child.pos.y + clamp(target.y - child.pos.y, -1, 1));
 
-				m = new Game.Move("run", dest);
+				m = new Move("run", dest);
 			}
 			else
 			{
 				// Run left or right
 				Point dest = new Point(child.pos.x + clamp(target.x - child.pos.x, -2, 2),
 				        child.pos.y);
-				m = new Game.Move("run", dest);
+				m = new Move("run", dest);
 			}
 		}
 		else if (child.pos.y != target.y)
@@ -84,11 +84,11 @@ public abstract class Strategy
 			// Run up or down.
 			Point dest = new Point(child.pos.x, child.pos.y
 			        + clamp(target.y - child.pos.y, -2, 2));
-			m = new Game.Move("run", dest);
+			m = new Move("run", dest);
 		}
 		else
 		{
-			m = new Game.Move();
+			m = new Move();
 		}
 		return m;
 	}

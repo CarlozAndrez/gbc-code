@@ -2,7 +2,7 @@ import java.awt.Point;
 import java.util.Random;
 
 
-public class HunterStrategy extends Strategy
+class HunterStrategy extends Strategy
 {
 	/** Source of randomness for this player. */
 	static Random rnd = new Random();
@@ -11,9 +11,9 @@ public class HunterStrategy extends Strategy
      * @see Strategy#chooseNextAction(Game, Game.Child)
      */
 	@Override
-    public Game.Move chooseNextAction(Game game, Game.Child child)
+    public Move chooseNextAction(Game game, Child child)
     {
-		Game.Move m = new Game.Move();
+		Move m = new Move();
 		if (child.dazed == 0)
 		{
 			// See if the child needs a new destination.
@@ -44,7 +44,7 @@ public class HunterStrategy extends Strategy
 		return m;
     }
 
-	private void searchAndAttack(Game game, Game.Child c, Game.Move m)
+	private void searchAndAttack(Game game, Child c, Move m)
     {
 	    // Stand up if the child is armed.
 	    if (!c.standing)
@@ -60,7 +60,7 @@ public class HunterStrategy extends Strategy
 	    }
     }
 
-	private void armChild(Game game, Game.Child c, Game.Move m)
+	private void armChild(Game game, Child c, Move m)
     {
 	    // Crush into a snow ball, if we have snow.
 	    if (c.holding == Game.HOLD_P1)
@@ -80,7 +80,7 @@ public class HunterStrategy extends Strategy
 	    }
     }
 
-	private void getSnow(boolean standing, Game.Move m, Point snowAt)
+	private void getSnow(boolean standing, Move m, Point snowAt)
     {
 	    if (standing)
 	    {
@@ -93,7 +93,7 @@ public class HunterStrategy extends Strategy
 	    }
     }
 
-	private Point findSnow(Game game, Game.Child c)
+	private Point findSnow(Game game, Child c)
     {
 	    Point snowAt = new Point(-1, -1);
 	    for (int ox = c.pos.x - 1; ox <= c.pos.x + 1; ox++)
@@ -115,7 +115,7 @@ public class HunterStrategy extends Strategy
 	    return snowAt;
     }
 
-	private boolean findVictim(Game game, Game.Child c, Game.Move m)
+	private boolean findVictim(Game game, Child c, Move m)
 	{
 		boolean victimFound = false;
 		for (int j = Game.CCOUNT; !victimFound && j < Game.CCOUNT * 2; j++)

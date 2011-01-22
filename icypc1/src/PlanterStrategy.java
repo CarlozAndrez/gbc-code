@@ -9,7 +9,7 @@
 import java.awt.Point;
 import java.util.Random;
 
-public class PlanterStrategy extends Strategy
+class PlanterStrategy extends Strategy
 {
 	/** Source of randomness for this player. */
 	private static Random rnd = new Random();
@@ -18,30 +18,30 @@ public class PlanterStrategy extends Strategy
 	 * sequence of moves templates to build a snowman to the right of the player. For
 	 * the first one, we're just looking for a place to build.
 	 */
-	private static final Game.Move[] instructions = { 
-		new Game.Move("idle"), 
-		new Game.Move("crouch"),
-		new Game.Move("pickup", 1, 0),
-		new Game.Move("pickup", 1, 0),
-		new Game.Move("pickup", 1, 0), 
-		new Game.Move("crush"),
-		new Game.Move("drop", 1, 0), 
-		new Game.Move("pickup", 1, 1),
-		new Game.Move("pickup", 1, 1), 
-		new Game.Move("crush"),
-	 	new Game.Move("drop", 1, 0), 
-	 	new Game.Move("pickup", 1, 1),
-	  	new Game.Move("crush"), 
-	  	new Game.Move("drop", 1, 0), 
-	  	new Game.Move("stand"),
+	private static final Move[] instructions = { 
+		new Move("idle"), 
+		new Move("crouch"),
+		new Move("pickup", 1, 0),
+		new Move("pickup", 1, 0),
+		new Move("pickup", 1, 0), 
+		new Move("crush"),
+		new Move("drop", 1, 0), 
+		new Move("pickup", 1, 1),
+		new Move("pickup", 1, 1), 
+		new Move("crush"),
+	 	new Move("drop", 1, 0), 
+	 	new Move("pickup", 1, 1),
+	  	new Move("crush"), 
+	  	new Move("drop", 1, 0), 
+	  	new Move("stand"),
 	};
 
 	/** Current instruction this child is executing. */
 	private int state = 0;
 
-	public Game.Move chooseNextAction(Game game, Game.Child child)
+	public Move chooseNextAction(Game game, Child child)
 	{
-		if (child.dazed > 0) return new Game.Move();
+		if (child.dazed > 0) return new Move();
 
 		if (state == 0)
 		{
@@ -53,7 +53,7 @@ public class PlanterStrategy extends Strategy
 			if (child.holding != Game.HOLD_EMPTY
 			        && child.pos.y < Game.SIZE - 1
 			        && game.height[child.pos.x][child.pos.y + 1] <= Game.MAX_PILE - 3)
-			    return new Game.Move("drop", child.pos.x, child.pos.y + 1);
+			    return new Move("drop", child.pos.x, child.pos.y + 1);
 
 			// Find the nearest neighbor.
 			int nearDist = game.findNearestNeighbor(child.pos);
@@ -79,7 +79,7 @@ public class PlanterStrategy extends Strategy
 		if (state > 0)
 		{
 			// Stamp out a move from our instruction template and return it.
-			Game.Move m = new Game.Move(instructions[state].action);
+			Move m = new Move(instructions[state].action);
 			if (instructions[state].dest != null)
 			    m.dest = new Point(child.pos.x + instructions[state].dest.x,
 			            child.pos.y + instructions[state].dest.y);
