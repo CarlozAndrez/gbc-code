@@ -92,5 +92,4 @@ abstract class Strategy
 		}
 		return m;
 	}
-
 }

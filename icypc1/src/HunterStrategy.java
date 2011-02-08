@@ -44,7 +44,7 @@ class HunterStrategy extends Strategy
 		return m;
     }
 
-	private void searchAndAttack(Game game, Child c, Move m)
+	protected void searchAndAttack(Game game, Child c, Move m)
     {
 	    // Stand up if the child is armed.
 	    if (!c.standing)
@@ -60,7 +60,7 @@ class HunterStrategy extends Strategy
 	    }
     }
 
-	private void armChild(Game game, Child c, Move m)
+	protected void armChild(Game game, Child c, Move m)
     {
 	    // Crush into a snow ball, if we have snow.
 	    if (c.holding == Game.HOLD_P1)
@@ -80,7 +80,7 @@ class HunterStrategy extends Strategy
 	    }
     }
 
-	private void getSnow(boolean standing, Move m, Point snowAt)
+	protected void getSnow(boolean standing, Move m, Point snowAt)
     {
 	    if (standing)
 	    {
@@ -93,7 +93,7 @@ class HunterStrategy extends Strategy
 	    }
     }
 
-	private Point findSnow(Game game, Child c)
+	protected Point findSnow(Game game, Child c)
     {
 	    Point snowAt = new Point(-1, -1);
 	    for (int ox = c.pos.x - 1; ox <= c.pos.x + 1; ox++)
@@ -115,7 +115,7 @@ class HunterStrategy extends Strategy
 	    return snowAt;
     }
 
-	private boolean findVictim(Game game, Child c, Move m)
+	protected boolean findVictim(Game game, Child c, Move m)
 	{
 		boolean victimFound = false;
 		for (int j = Game.CCOUNT; !victimFound && j < Game.CCOUNT * 2; j++)

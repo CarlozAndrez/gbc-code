@@ -53,7 +53,14 @@ class PlanterStrategy extends Strategy
 			if (child.holding != Game.HOLD_EMPTY
 			        && child.pos.y < Game.SIZE - 1
 			        && game.height[child.pos.x][child.pos.y + 1] <= Game.MAX_PILE - 3)
+            {
 			    return new Move("drop", child.pos.x, child.pos.y + 1);
+            }
+
+            if (!child.pos.equals(child.runTarget))
+            {
+                return moveToward(child, child.runTarget);
+            }
 
 			// Find the nearest neighbor.
 			int nearDist = game.findNearestNeighbor(child.pos);
@@ -76,30 +83,13 @@ class PlanterStrategy extends Strategy
 		}
 
 		// Are we building a snowman?
-		if (state > 0)
-		{
-			// Stamp out a move from our instruction template and return it.
-			Move m = new Move(instructions[state].action);
-			if (instructions[state].dest != null)
-			    m.dest = new Point(child.pos.x + instructions[state].dest.x,
-			            child.pos.y + instructions[state].dest.y);
-			state = (state + 1) % instructions.length;
+        // Stamp out a move from our instruction template and return it.
+        Move m = new Move(instructions[state].action);
+        if (instructions[state].dest != null)
+            m.dest = new Point(child.pos.x + instructions[state].dest.x,
+                    child.pos.y + instructions[state].dest.y);
+        state = (state + 1) % instructions.length;
 
-			return m;
-		}
-
-		// Run around looking for a good place to build
-
-		// See if the child needs a new, random destination.
-		while (child.runTimer <= 0 || child.runTarget.equals(child.pos))
-		{
-			// Pick somewhere to run, omit the top and righmost edges.
-			child.runTarget.setLocation(rnd.nextInt(Game.SIZE - 1),
-			        rnd.nextInt(Game.SIZE - 1));
-			child.runTimer = 1 + rnd.nextInt(14);
-		}
-
-		child.runTimer--;
-		return moveToward(child, child.runTarget);
+        return m;
 	}
 }

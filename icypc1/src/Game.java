@@ -1,5 +1,7 @@
 import java.awt.Point;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 class Game
@@ -80,6 +82,8 @@ class Game
 	// List of children on the field, half for each team.
 	Child[] cList = new Child[2 * Game.CCOUNT];
 
+    List<Point> redSnowmen = new ArrayList<Point>();
+
 	int turnNum;
 
 	// Set to null to turn of debug output
@@ -142,6 +146,10 @@ class Game
 					height[i][j] = token.charAt(0) - '0';
 					ground[i][j] = token.charAt(1) - 'a';
 				}
+                if (GROUND_SMR == ground[i][j])
+                {
+                    redSnowmen.add(new Point(i, j));   
+                }
 			}
 		}
 	}
