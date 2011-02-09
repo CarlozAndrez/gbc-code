@@ -17,11 +17,10 @@ class HunterStrategy extends Strategy
 		if (child.dazed == 0)
 		{
 			// See if the child needs a new destination.
-			while (child.runTimer <= 0 || child.runTarget.equals(child.pos))
+			while (child.runTarget.equals(child.pos))
 			{
 				child.runTarget.setLocation(rnd.nextInt(Game.SIZE),
 				        rnd.nextInt(Game.SIZE));
-				child.runTimer = 1 + rnd.nextInt(14);
 			}
 
 			// Try to acquire a snowball if we need one.
@@ -38,7 +37,6 @@ class HunterStrategy extends Strategy
 			if (m.action.equals("idle"))
 			{
 				m = moveToward(child, child.runTarget);
-				child.runTimer--;
 			}
 		}
 		return m;
