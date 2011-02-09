@@ -305,4 +305,48 @@ class Game
 		}
 		return NO_OBSTRUCTION;
 	}
+
+    public ArrayList<Integer> getVisibleEnemyChildren()
+    {
+        ArrayList<Integer> visibleEnemyChildren = new ArrayList<Integer>();
+        for (int index = 4; index <= 7; index++)
+        {
+            if (cList[index].canBeSeen())
+            {
+                visibleEnemyChildren.add(index);
+            }
+        }
+        return visibleEnemyChildren;
+    }
+
+    public int getNearestEnemyIndex(Child child, ArrayList<Integer> visibleEnemyChildren)
+    {
+        double distance = 999;
+        int dazedCount = 999; // todo: consider dazed values
+        int index = visibleEnemyChildren.get(0);
+        for (Integer i : visibleEnemyChildren)
+        {
+            double pDistance = getDistance(child.pos, cList[i].pos);
+            if (pDistance < distance)
+            {
+                distance = pDistance;
+                index = i;
+            }
+        }
+
+        return index;
+    }
+
+    protected boolean isWithinProximity(Point p1, Point p2, int proximity)
+    {
+        return getDistance(p1, p2) < proximity;
+    }
+
+    protected double getDistance(Point p1, Point p2)
+    {
+        int dx = p1.x - p2.x;
+        int dy = p1.y - p2.y;
+        int dsq = dx * dx + dy * dy;
+        return Math.sqrt(dsq);
+    }
 }

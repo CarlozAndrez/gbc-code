@@ -28,16 +28,16 @@ public class MixedPlayer
             assignPlanter(game, strategy, 0);
             assignDefender(game, strategy, 1, 0);
 
-            ArrayList<Integer> visibleEnemyChildren = getVisibleEnemyChildren(game);
+            ArrayList<Integer> visibleEnemyChildren = game.getVisibleEnemyChildren();
             if (visibleEnemyChildren.size() > 0)
             {
-                Integer enemyIndex = getNearestEnemyIndex(game, 2, visibleEnemyChildren);
+                Integer enemyIndex = game.getNearestEnemyIndex(game.cList[2], visibleEnemyChildren);
                 visibleEnemyChildren.remove(enemyIndex);
                 assignHunter(game, strategy, 2, enemyIndex);
             }
             if (visibleEnemyChildren.size() > 0)
             {
-                Integer enemyIndex = getNearestEnemyIndex(game, 3, visibleEnemyChildren);
+                Integer enemyIndex = game.getNearestEnemyIndex(game.cList[3], visibleEnemyChildren);
                 visibleEnemyChildren.remove(enemyIndex);
                 assignHunter(game, strategy, 3, enemyIndex);
             }
@@ -50,37 +50,6 @@ public class MixedPlayer
             }
 		}
 	}
-
-    private static ArrayList<Integer> getVisibleEnemyChildren(Game game)
-    {
-        ArrayList<Integer> visibleEnemyChildren = new ArrayList<Integer>();
-        for (int index = 4; index <= 7; index++)
-        {
-            if (game.cList[index].canBeSeen())
-            {
-                visibleEnemyChildren.add(index);
-            }
-        }
-        return visibleEnemyChildren;
-    }
-
-    private static int getNearestEnemyIndex(Game game, int childIndex, ArrayList<Integer> visibleEnemyChildren)
-    {
-        double distance = 999;
-        int dazedCount = 999; // todo: consider dazed values
-        int index = visibleEnemyChildren.get(0);
-        for (Integer i : visibleEnemyChildren)
-        {
-            double pDistance = getDistance(game.cList[childIndex].pos, game.cList[i].pos);
-            if (pDistance < distance)
-            {
-                distance = pDistance;
-                index = i;
-            }
-        }
-
-        return index;
-    }
 
     private static void assignPlanter(Game game, Strategy[] sList, int childIndex)
     {
@@ -153,23 +122,10 @@ public class MixedPlayer
     {
         for(Point snowmanPoint : game.redSnowmen)
         {
-            if (isWithinProximity(p, snowmanPoint, proximity)) {
+            if (game.isWithinProximity(p, snowmanPoint, proximity)) {
                 return true;
             }
         }
         return false;
-    }
-
-    protected static boolean isWithinProximity(Point p1, Point p2, int proximity)
-    {
-        return getDistance(p1, p2) < proximity;
-    }
-
-    protected static double getDistance(Point p1, Point p2)
-    {
-        int dx = p1.x - p2.x;
-        int dy = p1.y - p2.y;
-        int dsq = dx * dx + dy * dy;
-        return Math.sqrt(dsq);
     }
 }
