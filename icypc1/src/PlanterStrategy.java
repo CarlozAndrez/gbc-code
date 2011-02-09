@@ -43,7 +43,7 @@ class PlanterStrategy extends Strategy
 	{
 		if (child.dazed > 0) return new Move();
 
-		if (state == 0)
+		if (!isBuildingASnowman())
 		{
 			// Not building a snowman.
 
@@ -92,4 +92,8 @@ class PlanterStrategy extends Strategy
 
         return m;
 	}
+
+    public boolean isBuildingASnowman() {
+        return state != 0;
+    }
 }
