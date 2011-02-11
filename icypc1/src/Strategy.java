@@ -43,27 +43,44 @@ abstract class Strategy
 	 * 
 	 * @todo MDK doesn't check for an obstruction between the runner and destination.
 	 */
-	private boolean isValidDestination(Game game, Point test)
+	private boolean isValidDestination(Game game, Child me, Point test)
 	{
-		// Make sure we test point is on the map.
-		if (test.x < 0) return false;
-		if (test.x >= Game.SIZE) return false;
-		if (test.y < 0) return false;
-		if (test.y >= Game.SIZE) return false;
+		Point[] path = game.linearPath(me.pos, test);
 		
-		// Make sure there's no obstructions.
-		if (game.ground[test.x][test.y] == Game.GROUND_TREE) return false;
-		if (game.ground[test.x][test.y] == Game.GROUND_SMR) return false;
-		if (game.ground[test.x][test.y] == Game.GROUND_SMB) return false;
-		if (game.hasFriend(test)) return false;
-		if (game.hasFoe(test)) return false;
-		
-		// Check the height of snow.
-		if (game.height[test.x][test.y] > 5) return false;
-		
+		Game.debug("from: " + Game.p2s(me.pos) + ", to: " + Game.p2s(test)+ ", path: " + Game.path2s(path));
+		return isValidPath(game, path);
+	}
+	
+	private boolean isValidPath(Game game, Point[] path)
+	{
+		for (Point pt : path)
+		{
+			if (isObstructed(game, pt)) return false;
+		}
 		return true;
 	}
-
+	
+	private boolean isObstructed(Game game, Point test)
+	{
+		// Make sure we test point is on the map.
+		if (test.x < 0) return true;
+		if (test.x >= Game.SIZE) return true;
+		if (test.y < 0) return true;
+		if (test.y >= Game.SIZE) return true;
+		
+		// Make sure there's no obstructions.
+		if (game.ground[test.x][test.y] == Game.GROUND_TREE) return true;
+		if (game.ground[test.x][test.y] == Game.GROUND_SMR) return true;
+		if (game.ground[test.x][test.y] == Game.GROUND_SMB) return true;
+		if (game.hasFriend(test)) return true;
+		if (game.hasFoe(test)) return true;
+		
+		// Check the height of snow.
+		if (game.height[test.x][test.y] > 5) return true;
+		
+		return false;
+	}
+	
 	private Move moveToward(Game game, Child child, Point target, Point[] offsets, String moveType)
 	{
 		Move m;
@@ -85,15 +102,15 @@ abstract class Strategy
 
 	// Walk through all possible positions (as determined by the offset list)
 	// and pick the closest non-blocked position to our target.
-	private Point chooseDestination(Game game, Child child, Point target, Point[] offsets)
+	private Point chooseDestination(Game game, Child me, Point target, Point[] offsets)
 	{
 		double nearest = 1000.0;
 		Point dest = null;
 		
 		for (Point offset : offsets)
 		{
-			Point testPt = new Point(child.pos.x + offset.x, child.pos.y + offset.y);
-			if (isValidDestination(game, testPt))
+			Point testPt = new Point(me.pos.x + offset.x, me.pos.y + offset.y);
+			if (isValidDestination(game, me, testPt))
 			{
 				double dist = Point.distance(testPt.x, testPt.y, target.x, target.y);
 				if (dist < nearest)

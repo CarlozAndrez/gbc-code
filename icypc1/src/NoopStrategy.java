@@ -8,4 +8,11 @@ public class NoopStrategy extends Strategy
 		return new Move();
 	}
 
+	@Override
+	protected double voteOnBeingAPlanter(Game game, Child me)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

@@ -1,5 +1,5 @@
-// A simple player that just tries to plant snowmen in interesting
-// places.
+// A simple player that just tries to hit children on the opponent's
+// team with snowballs.
 //
 // Feel free to use this as a starting point for your own player.
 //
@@ -8,20 +8,14 @@
 
 import java.util.Scanner;
 
-public class PlanterPlayer
+public class NoopPlayer
 {
 	public static void main(String[] args)
 	{
+		Game.debug("new game");
+		
 		Game game = new Game();
-		
-		Strategy[] strategy = new Strategy[Game.CCOUNT];
-		for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
-			strategy[nchild] = new PlanterStrategy();
-		
-		// Debug
-		//strategy[0] = new NoopStrategy();
-		//strategy[1] = new NoopStrategy();
-		//strategy[2] = new NoopStrategy();
+		Strategy strategy = new NoopStrategy();
 		
 		// Scanner to parse input from the game engine.
 		Scanner in = new Scanner(System.in);
@@ -32,7 +26,7 @@ public class PlanterPlayer
 			// Decide what each child should do
 			for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
 			{
-				Move m = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
+				Move m = strategy.chooseNextAction(game, game.cList[nchild]);
 				m.writeAction(System.out);
 			}
 		}

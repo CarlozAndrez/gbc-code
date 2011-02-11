@@ -69,7 +69,7 @@ class Game
 	public static final int GROUND_CHILD = 10;
 
 	// Constant returned from checkForObstructions indicating one was not found.
-	private static final Point NO_OBSTRUCTION = new Point(-1, -1);
+	public static final Point NO_OBSTRUCTION = new Point(-1, -1);
 
 	// Current game score for self (red) and opponent (blue).
 	int[] score = new int[2];
@@ -88,7 +88,7 @@ class Game
 	int turnNum;
 
 	// Set to null to turn of debug output
-	private static PrintStream dbgout = null; // System.err;
+	private static PrintStream dbgout =  System.err;
 
 	public static void debug(String message)
 	{
@@ -260,13 +260,13 @@ class Game
 	// the positive direction for values halfway between two integers, the
 	// function below rounds these values away from zero. This helps to ensure
 	// that linear paths are symmetric for the red and the blue player.
-	public Point[] linearPath(Point from, Point to, int steps)
+	public Point[] linearPath(Point from, Point to)
 	{
 		int nsteps = Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y));
 		Point[] results = new Point[nsteps];
 		for (int step = 0; step < nsteps; step++)
 		{
-			int time = step + 1;
+			double time = step + 1;
 			double increment = time / nsteps;
 			results[step] = new Point(
 					from.x + roundPathValue(increment * (to.x - from.x)),
@@ -352,10 +352,32 @@ class Game
         int dsq = dx * dx + dy * dy;
         return Math.sqrt(dsq);
     }
+    
+    public static double dist(Point p1, Point p2)
+    {
+    	return Point.distance(p1.x, p1.y, p2.x, p2.y);
+    }
+    
+    public static double dist(Child c1, Child c2)
+    {
+    	return dist(c1.pos, c2.pos);
+    }
 
 	public static String p2s(Point pos)
 	{
 		return "(" + pos.x + ", " + pos.y + ")";
+	}
+	
+	public static String path2s(Point[] path)
+	{
+		String result = "";
+		for (Point pt : path)
+		{
+			result += Game.p2s(pt);
+			result += " ";
+		}
+		
+		return result;
 	}
 
 	public int makeRandomNumber(int low, int high)
