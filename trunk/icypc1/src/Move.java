@@ -47,4 +47,16 @@ class Move
 	    	out.println(action + " " + dest.x + " " + dest.y);
 	    }
     }
+	
+	public String toString()
+	{
+	    if (dest == null)
+	    {
+	    	return action;
+	    }
+	    else
+	    {
+	    	return action + " " + dest.x + " " + dest.y;
+	    }	
+	}
 }

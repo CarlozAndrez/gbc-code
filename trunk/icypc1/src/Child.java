@@ -29,6 +29,16 @@ class Child
 	
 	public String toString()
 	{
-		return new String("at: " + pos + ", " + (standing? "S": "C") + ", color: " + color + ", holding: " + holding + ", dazed: " + dazed);
+		return new String("at: (" + pos.x +"," + pos.y + "), " + (standing? "S": "C") + ", color: " + color + ", holding: " + holding + ", dazed: " + dazed);
+	}
+
+	public boolean isFriend(Child c)
+	{
+		return color == c.color;
+	}
+	
+	public boolean isFoe(Child c)
+	{
+		return color != c.color;
 	}
 }

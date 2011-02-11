@@ -1,108 +1,95 @@
 import java.awt.Point;
-import java.util.Random;
 
 
 class HunterStrategy extends Strategy
 {
-	/** Source of randomness for this player. */
-	static Random rnd = new Random();
+	private static final double THROWING_RANGE = 8.0;
 	
-	/* (non-Javadoc)
-     * @see Strategy#chooseNextAction(Game, Game.Child)
-     */
 	@Override
-    public Move chooseNextAction(Game game, Child child)
+    public Move chooseNextAction(Game game, Child me)
     {
 		Move m = new Move();
-		if (child.dazed == 0)
+		Child victim;
+		if (me.dazed == 0)
 		{
-			// See if the child needs a new destination.
-			while (child.runTarget.equals(child.pos))
+			// If we don't have a snowball, get one.
+			if (me.holding != Game.HOLD_S1)
 			{
-				child.runTarget.setLocation(rnd.nextInt(Game.SIZE),
-				        rnd.nextInt(Game.SIZE));
+				m = armChild(game, me);
 			}
-
-			// Try to acquire a snowball if we need one.
-			if (child.holding != Game.HOLD_S1)
-			{
-				armChild(game, child, m);
-			}
+			
+		    // Stand up if the child is armed.
+			else if (!me.standing)
+		    {
+		    	m = new Move("stand");
+		    }
 			else
 			{
-				searchAndAttack(game, child, m);
-			}
-
-			// Try to run toward the destination.
-			if (m.action.equals("idle"))
-			{
-				m = moveToward(child, child.runTarget);
+				victim = findVictim(game, me);
+				if (inRange(me, victim))
+				{
+					// If target is in range, throw.
+					m = attack(me, victim);
+					Game.debug("chooseNextAction(): attacking: " + m + ", me: " + Game.p2s(me.pos) + ", victim: " + Game.p2s(victim.pos));
+				}
+				else
+				{
+					// Try to close on the next target.
+					m = seekTarget(game, me, victim);
+				}
 			}
 		}
 		return m;
     }
 
-	protected void searchAndAttack(Game game, Child c, Move m)
-    {
-	    // Stand up if the child is armed.
-	    if (!c.standing)
-	    {
-	    	m.action = "stand";
-	    }
-	    else
-	    {
-	    	// Try to find a victim.
-	    	findVictim(game, c, m);
-	    	
-	    	// @todo what do you do if the victim is not found?
-	    }
-    }
-
-	protected void armChild(Game game, Child c, Move m)
-    {
+	private Move armChild(Game game, Child me)
+	{
+		Move result = new Move();
+		
 	    // Crush into a snow ball, if we have snow.
-	    if (c.holding == Game.HOLD_P1)
+	    if (me.holding == Game.HOLD_P1)
 	    {
-	    	m.action = "crush";
+	    	result = new Move("crush");
 	    }
 	    else
 	    {
 	    	// We don't have snow, see if there is some nearby.
-	    	Point snowAt = findSnow(game, c);
-
+	    	Point snowAt = findSnow(game, me);
+	
 	    	// If there is snow, try to get it.
 	    	if (snowAt.x >= 0)
 	    	{
-	    		getSnow(c.standing, m, snowAt);
+	    		result = getSnow(me.standing, snowAt);
+	    	}
+	    	else
+	    	{
+	    		// Move to random location looking for snow.
+	    		// @todo MDK choose direction a little more effectively. Anti-gravity?
+	    		result = runToRandomLocation(game, me);
 	    	}
 	    }
-    }
+	    
+	    return result;
+	}
 
-	protected void getSnow(boolean standing, Move m, Point snowAt)
-    {
-	    if (standing)
-	    {
-	    	m.action = "crouch";
-	    }
-	    else
-	    {
-	    	m.action = "pickup";
-	    	m.dest = snowAt;
-	    }
-    }
-
-	protected Point findSnow(Game game, Child c)
-    {
+	private Point findSnow(Game game, Child child)
+	{
 	    Point snowAt = new Point(-1, -1);
-	    for (int ox = c.pos.x - 1; ox <= c.pos.x + 1; ox++)
-	    	for (int oy = c.pos.y - 1; oy <= c.pos.y + 1; oy++)
+	    
+	    // If there is another child adjacent to us return "false"
+	    // so we don't compete for the same snow.
+	    Child nearest = getNearestChild(game, child);
+	    if ((nearest != null) && (Point.distance(child.pos.x, child.pos.y, nearest.pos.x, nearest.pos.y) < 3.0)) return snowAt;
+	    
+	    for (int ox = child.pos.x - 1; ox <= child.pos.x + 1; ox++)
+	    	for (int oy = child.pos.y - 1; oy <= child.pos.y + 1; oy++)
 	    	{
 	    		// Is there snow to pick up?
 	    		if (ox >= 0
 	    		        && ox < Game.SIZE
 	    		        && oy >= 0
 	    		        && oy < Game.SIZE
-	    		        && (ox != c.pos.x || oy != c.pos.y)
+	    		        && (ox != child.pos.x || oy != child.pos.y)
 	    		        && game.ground[ox][oy] == Game.GROUND_EMPTY
 	    		        && game.height[ox][oy] > 0)
 	    		{
@@ -111,32 +98,116 @@ class HunterStrategy extends Strategy
 	    		}
 	    	}
 	    return snowAt;
-    }
+	}
 
-	protected boolean findVictim(Game game, Child c, Move m)
+	// Return nearest visible child that is not me.
+	private Child getNearestChild(Game game, Child me)
 	{
-		boolean victimFound = false;
-		for (int j = Game.CCOUNT; !victimFound && j < Game.CCOUNT * 2; j++)
+		double nearest = 10000.0;
+		Child result = null;
+		for (Child ch : game.cList)
 		{
-			if (game.cList[j].pos.x >= 0)
+			if (ch.canBeSeen() && !ch.pos.equals(me.pos))
 			{
-				int dx = game.cList[j].pos.x - c.pos.x;
-				int dy = game.cList[j].pos.y - c.pos.y;
-				int dsq = dx * dx + dy * dy;
-				if (dsq < 8 * 8)
+				double dist = Point.distance(ch.pos.x, ch.pos.y, me.pos.x, me.pos.y);
+				if (dist < nearest)
 				{
-					victimFound = true;
-					m.action = "throw";
-					// throw past the victim, so we will
-					// probably hit them
-					// before the snowball falls into the
-					// snow.
-					m.dest = new Point(c.pos.x + dx * 2, c.pos.y + dy * 2);
+					nearest = dist;
+					result = ch;
 				}
 			}
 		}
-		return victimFound;
+
+		return result;
 	}
 
+	private Move getSnow(boolean standing, Point snowAt)
+	{
+		Move result;
+	    if (standing)
+	    {
+	    	result = new Move("crouch");
+	    }
+	    else
+	    {
+	    	result = new Move("pickup", snowAt);
+	    }
+	    return result;
+	}
+
+	private Child findVictim(Game game, Child child)
+	{
+		Child victim = findNonDazedVictim(game, child);
+		if (victim == null) victim = findAnyVictim(game, child);
+		
+		return victim;
+	}
+	
+	private Child findAnyVictim(Game game, Child child)
+	{
+		return findVictimBelowDazedThreshold(game, child, 1000);
+	}
+
+	private Child findNonDazedVictim(Game game, Child child)
+	{
+		return findVictimBelowDazedThreshold(game, child, 0);
+	}
+	
+	// Find a victim at less then or equal the specified "dazed" threshold.
+	private Child findVictimBelowDazedThreshold(Game game, Child me, int dazedThreshold)
+	{
+		Child victim = null;
+		int closest = 10000;
+		
+		for (Child other : game.cList)
+		{
+			// Look for the closest not-dazed foe.
+			if (other.canBeSeen() && me.isFoe(other) && (other.dazed <= dazedThreshold))
+			{
+				int dx = me.pos.x - other.pos.x;
+				int dy = me.pos.y - other.pos.y;
+				int dist = dx * dx + dy * dy;
+				if (dist < closest)
+				{
+					closest = dist;
+					victim = other;
+				}
+			}
+		}
+		return victim;
+	}
+
+	private boolean inRange(Child me, Child victim)
+	{	
+		if (victim == null) return false;
+		
+		double dist = Point.distance(me.pos.x, me.pos.y, victim.pos.x, victim.pos.y);
+		
+		Game.debug("inRange(): me: " + Game.p2s(me.pos) + ", victim: " + Game.p2s(victim.pos) + ", dist: " + dist);
+		
+		return dist < THROWING_RANGE;
+	}
+	
+	private Move attack(Child me, Child victim)
+	{
+		int dx = victim.pos.x - me.pos.x;
+		int dy = victim.pos.y - me.pos.y;
+
+		// Compute a destination beyond the victim
+		return new Move("throw", new Point(me.pos.x + (dx * 2), me.pos.y + (dy * 2)));
+
+	}
+
+	// Move towards the indicated victim if it exists, otherwise move randomly.
+	private Move seekTarget(Game game, Child me, Child victim)
+	{
+		if (victim != null) return moveToward(game, me, victim.pos);
+		return runToRandomLocation(game, me);
+	}
+	
+	private Move runToRandomLocation(Game game, Child me)
+	{
+		return moveToward(game, me, new Point(game.makeRandomNumber(0, Game.SIZE), game.makeRandomNumber(0, Game.SIZE)));	
+	}
 
 }

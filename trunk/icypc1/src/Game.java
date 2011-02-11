@@ -2,6 +2,7 @@ import java.awt.Point;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 class Game
@@ -99,6 +100,8 @@ class Game
 		for (int i = 0; i < cList.length; i++)
 			cList[i] = new Child();
 	}
+	
+	private Random rand = new Random();
 
 	// Return true if this is not the last turn.
 	public boolean readGameData(Scanner in)
@@ -349,4 +352,19 @@ class Game
         int dsq = dx * dx + dy * dy;
         return Math.sqrt(dsq);
     }
+
+	public static String p2s(Point pos)
+	{
+		return "(" + pos.x + ", " + pos.y + ")";
+	}
+
+	public int makeRandomNumber(int low, int high)
+	{
+		return low + rand.nextInt(high - low + 1);
+	}
+
+	public double makeRandomNumber(double low, double high)
+	{
+		return low + (rand.nextGaussian() * (high - low));
+	}
 }
