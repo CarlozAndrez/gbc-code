@@ -20,9 +20,9 @@ class PlanterStrategy extends Strategy
 	final static double JITTER_UPPER = 1.5;
 	
 	// Various "repulsive factors"
-	final static double RF_ENEMY = 1.2;
+	final static double RF_ENEMY = 1.0;
 	final static double RF_FRIEND = 1.0;
-	final static double RF_WALL = 1.0;
+	final static double RF_WALL = 0.75;
 
     private int costOfNotBuilding = 0;
 

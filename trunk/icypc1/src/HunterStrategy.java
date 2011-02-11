@@ -3,7 +3,14 @@ import java.awt.Point;
 
 class HunterStrategy extends Strategy
 {
-	private static final double THROWING_RANGE = 8.0;
+	private static final double MAX_THROWING_RANGE = 8.0;
+	private static final double IDEAL_THROWING_RANGE = 5.0;
+	private static final double R0 = 4.0;
+	private static final double RF_FRIEND = 1.0;
+	private static final double RF_ENEMY = 0.0;
+	private static final double RF_WALL = 0.75;
+	private static final double JITTER_LOWER = 0.5;
+	private static final double JITTER_UPPER = 1.5;
 	
 	@Override
     public Move chooseNextAction(Game game, Child me)
@@ -35,7 +42,7 @@ class HunterStrategy extends Strategy
 				else
 				{
 					// Try to close on the next target.
-					m = seekTarget(game, me, victim);
+					m = trackTarget(game, me, victim);
 				}
 			}
 		}
@@ -65,7 +72,7 @@ class HunterStrategy extends Strategy
 	    	{
 	    		// Move to random location looking for snow.
 	    		// @todo MDK choose direction a little more effectively. Anti-gravity?
-	    		result = runToRandomLocation(game, me);
+	    		result = seekTarget(game, me);
 	    	}
 	    }
 	    
@@ -181,11 +188,11 @@ class HunterStrategy extends Strategy
 	{	
 		if (victim == null) return false;
 		
-		double dist = Point.distance(me.pos.x, me.pos.y, victim.pos.x, victim.pos.y);
+		double dist = Game.dist(me, victim);
 		
 		Game.debug("inRange(): me: " + Game.p2s(me.pos) + ", victim: " + Game.p2s(victim.pos) + ", dist: " + dist);
 		
-		return dist < THROWING_RANGE;
+		return dist < MAX_THROWING_RANGE;
 	}
 	
 	private Move attack(Child me, Child victim)
@@ -195,19 +202,91 @@ class HunterStrategy extends Strategy
 
 		// Compute a destination beyond the victim
 		return new Move("throw", new Point(me.pos.x + (dx * 2), me.pos.y + (dy * 2)));
-
 	}
 
 	// Move towards the indicated victim if it exists, otherwise move randomly.
-	private Move seekTarget(Game game, Child me, Child victim)
+	private Move trackTarget(Game game, Child me, Child victim)
 	{
-		if (victim != null) return moveToward(game, me, victim.pos);
-		return runToRandomLocation(game, me);
+		if (victim != null) return moveToward(game, me, attackPos(me.pos, victim.pos));
+		return seekTarget(game, me);
 	}
 	
-	private Move runToRandomLocation(Game game, Child me)
+	// Choose a point near the victim (on a line between me and the victim)
+	// put not actually on top of them.
+	private Point attackPos(Point me, Point victim)
 	{
-		return moveToward(game, me, new Point(game.makeRandomNumber(0, Game.SIZE), game.makeRandomNumber(0, Game.SIZE)));	
+		double dist = Game.dist(me, victim);
+		double weight = (dist - IDEAL_THROWING_RANGE)/dist;
+		
+		int dx = (int)Math.round(weight * (victim.x - me.x));
+		int dy = (int)Math.round(weight * (victim.y - me.y));
+
+		// Compute a destination near the victim.
+		return new Point(me.x + dx, me.y + dy);
+	}
+
+	private double calcRepulsiveWeight(Child me, Point pos)
+	{	
+		return calcRepulsiveWeight(me, pos.x, pos.y);
+	}
+
+	private double calcRepulsiveWeight(Child me, int px, int py)
+	{	
+		double dist;
+		dist = Point.distance(me.pos.x, me.pos.y, px, py);
+		if (dist < 1.0)
+		{
+			Game.debug("calcRepulsiveWeight(): distance was < 1 " + dist);
+			dist = 1.0;
+		}
+		return R0/(dist * dist);
+	}
+	
+	// Use "antigravity technique" from to move to a new position from which we can 
+	// look for another victim.
+	private Move seekTarget(Game game, Child child) 
+	{
+		// Compute a set of inverted weighted vectors relative to our current position
+		// and sum them up.
+		
+		double dx = 0;
+		double dy = 0;
+		double weight;
+
+		for (Child c : game.cList)
+		{
+			if (!c.pos.equals(child.pos) && c.canBeSeen())
+			{
+				weight = calcRepulsiveWeight(child, c.pos);
+				if (child.isFriend(c)) weight *= RF_FRIEND;
+				else weight *= RF_ENEMY;
+				
+				// NB. order of subtraction is set up to invert the vectors.
+				dx += weight * (child.pos.x - c.pos.x);
+				dy += weight * (child.pos.y - c.pos.y);
+			}
+		}
+
+		// Apply some force to keep us away from the walls.
+		weight = RF_WALL * calcRepulsiveWeight(child, child.pos.x, -1);
+		dy += (int) Math.round(weight * (child.pos.y + 1));
+		
+		weight = RF_WALL * calcRepulsiveWeight(child, child.pos.x, Game.SIZE + 1);
+		dy += (int) Math.round(weight * (child.pos.y - Game.SIZE - 1));
+		
+		weight = RF_WALL * calcRepulsiveWeight(child, -1, child.pos.y);
+		dx += (int) Math.round(weight * (child.pos.x + 1));
+		
+		weight = RF_WALL * calcRepulsiveWeight(child, Game.SIZE + 1, child.pos.y);
+		dx += (int) Math.round(weight * (child.pos.x - Game.SIZE - 1));
+		
+		// Add some jitter to prevent us being trapped between two obstacles.
+		dx = game.makeRandomNumber(JITTER_LOWER*dx, JITTER_UPPER*dx);
+		dy = game.makeRandomNumber(JITTER_LOWER*dy, JITTER_UPPER*dy);
+		
+		Point newPos = new Point(child.pos.x + (int)Math.round(dx), child.pos.y + (int)Math.round(dy));
+		
+		return moveToward(game, child, newPos);
 	}
 
     protected double voteOnBeingAPlanter(Game game, Child me) {
