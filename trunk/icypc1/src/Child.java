@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.ArrayList;
 
 
 class Child
@@ -21,7 +22,9 @@ class Child
 	int runTimer = 0;
 	
 	Point runTarget = new Point();
-	
+
+    java.util.List<Integer> dazedTurnsList = new ArrayList<Integer>();
+
 	public boolean canBeSeen()
 	{
 		return (pos.x > -1) && (pos.y > -1);
@@ -41,4 +44,12 @@ class Child
 	{
 		return color != c.color;
 	}
+
+    public int getNumberOfRecentDazedTurns(int numTurns) {
+        int num = 0;
+        for (Integer value : dazedTurnsList) {
+            num += value;
+        }
+        return num;
+    }
 }

@@ -27,6 +27,7 @@ public class MixedPlayer
 		// Keep reading states until the game ends.
 		while (game.readGameData(in))
 		{
+            // get a list of the planters
             java.util.List<Integer> planters = new ArrayList<Integer>();
             for (int i = 0; i <= 3; i++) {
                 if (strategy[i] instanceof PlanterStrategy)
@@ -34,6 +35,27 @@ public class MixedPlayer
                     planters.add(i);
                 }
             }
+
+            // consider flipping a planter to a hunter
+            if (planters.size() >= 2)
+            {
+                int index = -1;
+                for (int i : planters)
+                {
+                    if (game.cList[i].getNumberOfRecentDazedTurns(10) > 6)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1)
+                {
+                    assignHunter(game, strategy, index);
+                    planters.remove((Integer) index);
+                }
+            }
+
+            // consider reassigning planters to hunters
             for (Integer i : planters) {
                 if (strategy[i].voteOnBeingAPlanter(game, game.cList[i]) < 0.1) {
                     pickHunterToBecomePlanter(game);
@@ -53,11 +75,9 @@ public class MixedPlayer
 
     private static void pickHunterToBecomePlanter(Game game) {
         int hunterIndex = -1;
+        double bestVote = 0.0;
         for (int i = 0; i <= 3; i++) {
-            if (strategy[i] instanceof HunterStrategy &&
-                    (strategy[i].voteOnBeingAPlanter(game, game.cList[i]) > 0.9 ||
-                        hunterIndex == -1))
-            {
+            if (strategy[i] instanceof HunterStrategy && strategy[i].voteOnBeingAPlanter(game, game.cList[i]) > bestVote) {
                 hunterIndex = i;
             }
         }
@@ -93,7 +113,7 @@ public class MixedPlayer
         Strategy[] strategy = new Strategy[Game.CCOUNT];
 
         assignPlanter(game, strategy, 0);
-        assignHunter(game, strategy, 1);
+        assignPlanter(game, strategy, 1);
         assignHunter(game, strategy, 2);
         assignHunter(game, strategy, 3);
 
