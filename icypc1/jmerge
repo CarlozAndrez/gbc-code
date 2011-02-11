@@ -1,0 +1,7 @@
+#!/bin/bash
+# Usage jmerge <file1> <file2> ... <fileN> 
+# Sends output to stdout.
+# Use jmerge <file1> <file2> ... <fileN> > outfile to save to a file.
+#
+cat $* | grep ^import | sort | uniq
+cat $* | grep -v import 
