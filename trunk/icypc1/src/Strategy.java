@@ -31,8 +31,12 @@ abstract class Strategy
 		new Point(0, -1)
 	};
 
+    // Return a value from 0.0 to 1.0, where 0.0 indicates this player strategy should not be a Planter
+    // and 1.0 means the player strategy should be a Planter.  Values in between will be weighed
+    // against other votes.
+    abstract protected double voteOnBeingAPlanter(Game game, Child me);
 
-	/**
+    /**
 	 * A destination is valid if its on the map and not blocked.
 	 * NOTE! this may not be a valid test for a player who is trying to run 
 	 * over a snowmen.
