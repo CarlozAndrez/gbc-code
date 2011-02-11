@@ -45,6 +45,7 @@ public class MixedPlayer
             for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
             {
                 Move move = strategy[nchild].chooseNextAction(game, game.cList[nchild]);
+                Game.debug("move " + move + ", for child " + nchild);
                 move.writeAction(System.out);
             }
 		}

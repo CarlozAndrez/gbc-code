@@ -7,8 +7,8 @@ class HunterStrategy extends Strategy
 	private static final double IDEAL_THROWING_RANGE = 5.0;
 	private static final double R0 = 4.0;
 	private static final double RF_FRIEND = 1.0;
-	private static final double RF_ENEMY = 0.0;
-	private static final double RF_WALL = 0.75;
+	private static final double RF_ENEMY = 0.2;
+	private static final double RF_WALL = 1.0;
 	private static final double JITTER_LOWER = 0.5;
 	private static final double JITTER_UPPER = 1.5;
 	
@@ -36,8 +36,7 @@ class HunterStrategy extends Strategy
 				if (inRange(me, victim))
 				{
 					// If target is in range, throw.
-					m = attack(me, victim);
-					Game.debug("chooseNextAction(): attacking: " + m + ", me: " + Game.p2s(me.pos) + ", victim: " + Game.p2s(victim.pos));
+					m = attack(game, me, victim);
 				}
 				else
 				{
@@ -188,20 +187,80 @@ class HunterStrategy extends Strategy
 	{	
 		if (victim == null) return false;
 		
-		double dist = Game.dist(me, victim);
-		
-		Game.debug("inRange(): me: " + Game.p2s(me.pos) + ", victim: " + Game.p2s(victim.pos) + ", dist: " + dist);
-		
-		return dist < MAX_THROWING_RANGE;
+		return Game.dist(me, victim) < MAX_THROWING_RANGE;
 	}
 	
-	private Move attack(Child me, Child victim)
+	private boolean isThrowObstructed(Game game, Child me, Child victim)
+	{
+		Point[] path = game.linearPath(me.pos, victim.pos);
+		
+		return isThrowObstructed(game, path);
+	}
+	
+	private boolean isThrowObstructed(Game game, Point[] path)
+	{
+		for (Point pt : path)
+		{
+			if (isThrowObstructed(game, pt)) return true;
+		}
+		return false;
+	}
+	
+	private boolean isThrowObstructed(Game game, Point test)
+	{
+		// Make sure we test point is on the map.
+		if (test.x < 0) return true;
+		if (test.x >= Game.SIZE) return true;
+		if (test.y < 0) return true;
+		if (test.y >= Game.SIZE) return true;
+		
+		// Make sure there's no obstructions.
+		if (game.ground[test.x][test.y] == Game.GROUND_TREE) return true;
+		if (game.ground[test.x][test.y] == Game.GROUND_SMR) return true;
+		if (game.ground[test.x][test.y] == Game.GROUND_SMB) return true;
+		if (game.hasFriend(test)) return true;
+		
+		// We don't care if a square is occupied by a foe, even if its not 
+		// our intended target.
+		// if (game.hasFoe(test)) return true;
+		
+		// Check the height of snow.
+		if (game.height[test.x][test.y] > 5) return true;
+		
+		return false;
+	}
+	
+	private Move attack(Game game, Child me, Child victim)
+	{
+		Move result;
+		if (!isThrowObstructed(game, me, victim))
+		{
+			int dx = victim.pos.x - me.pos.x;
+			int dy = victim.pos.y - me.pos.y;
+	
+			// Compute a destination beyond the victim
+			result =  new Move("throw", new Point(me.pos.x + (dx * 2), me.pos.y + (dy * 2)));
+		}
+		else
+		{
+			Game.debug("attack() throw from " + Game.p2s(me.pos)+ " to " + Game.p2s(victim.pos) + " is obstructed"); 
+			result = jink(game, me, victim);
+		}
+		
+		return result;
+	}
+
+	// Make a short move perpendicular to the line between us.
+	private Move jink(Game game, Child me, Child victim)
 	{
 		int dx = victim.pos.x - me.pos.x;
 		int dy = victim.pos.y - me.pos.y;
+		
+		if (game.makeRandomNumber(0, 1) == 0) dx = -1 * dx;
+		else dy = -1 * dy;
 
-		// Compute a destination beyond the victim
-		return new Move("throw", new Point(me.pos.x + (dx * 2), me.pos.y + (dy * 2)));
+		// Note that dy is added to the x position and dx to the y position.
+		return moveToward(game, me, me.pos.x + dy, me.pos.y + dx);
 	}
 
 	// Move towards the indicated victim if it exists, otherwise move randomly.

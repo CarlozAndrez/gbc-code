@@ -47,7 +47,6 @@ abstract class Strategy
 	{
 		Point[] path = game.linearPath(me.pos, test);
 		
-		Game.debug("from: " + Game.p2s(me.pos) + ", to: " + Game.p2s(test)+ ", path: " + Game.path2s(path));
 		return isValidPath(game, path);
 	}
 	
@@ -81,15 +80,15 @@ abstract class Strategy
 		return false;
 	}
 	
-	private Move moveToward(Game game, Child child, Point target, Point[] offsets, String moveType)
+	private Move moveToward(Game game, Child me, int targetx, int targety, Point[] offsets, String moveType)
 	{
 		Move m;
-		Point dest = chooseDestination(game, child, target, offsets);
+		Point dest = chooseDestination(game, me, targetx, targety, offsets);
 		
 		if (dest == null)
 		{
 			// @todo MDK if we can't find a legal move, maybe we should try again with a random destination?
-			Game.debug("moveToward(): Unable to find legal move from (" + child.pos.x + ", " + child.pos.y + ") to (" + target.x + ", " + target.y + ")");
+			Game.debug("moveToward(): Unable to find legal move from (" + me.pos.x + ", " + me.pos.y + ") to (" + targetx + ", " + targety + ")");
 			m = new Move();
 		}
 		else
@@ -102,7 +101,7 @@ abstract class Strategy
 
 	// Walk through all possible positions (as determined by the offset list)
 	// and pick the closest non-blocked position to our target.
-	private Point chooseDestination(Game game, Child me, Point target, Point[] offsets)
+	private Point chooseDestination(Game game, Child me, int targetx, int targety, Point[] offsets)
 	{
 		double nearest = 1000.0;
 		Point dest = null;
@@ -112,7 +111,7 @@ abstract class Strategy
 			Point testPt = new Point(me.pos.x + offset.x, me.pos.y + offset.y);
 			if (isValidDestination(game, me, testPt))
 			{
-				double dist = Point.distance(testPt.x, testPt.y, target.x, target.y);
+				double dist = Point.distance(testPt.x, testPt.y, targetx, targety);
 				if (dist < nearest)
 				{
 					nearest = dist;
@@ -126,16 +125,21 @@ abstract class Strategy
 	/**
 	 * Create a Move action given a child and its intended destination.
 	 */
-	protected Move moveToward(Game game, Child child, Point target)
+	protected Move moveToward(Game game, Child me, Point target)
+	{
+		return moveToward(game, me, target.x, target.y);
+	}
+	
+	protected Move moveToward(Game game, Child child, int targetx, int targety)
 	{
 		Move m = new Move();
 		if (child.standing)
 		{
-			m = moveToward(game, child, target, runOffsets, "run");
+			m = moveToward(game, child, targetx, targety, runOffsets, "run");
 		}
 		else
 		{
-			m = moveToward(game, child, target, crawlOffsets, "crawl");
+			m = moveToward(game, child, targetx, targety, crawlOffsets, "crawl");
 		}
 		return m;
 	}

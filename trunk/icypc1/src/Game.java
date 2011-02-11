@@ -88,7 +88,7 @@ class Game
 	int turnNum;
 
 	// Set to null to turn of debug output
-	private static PrintStream dbgout =  System.err;
+	private static PrintStream dbgout =  null; //System.err;
 
 	public static void debug(String message)
 	{
@@ -121,7 +121,6 @@ class Game
 	private int readTurn(Scanner in)
 	{
 		String token = in.next();
-		Game.debug("turn token: " + token);
 		return Integer.parseInt(token);
 	}
 
@@ -188,8 +187,6 @@ class Game
 			child.pos.x = Integer.parseInt(token);
 			child.pos.y = in.nextInt();
 
-			Game.debug("token: " + token + ", pos: " + child.pos);
-
 			// Read the stance, what the child is holding and how much
 			// longer he's dazed.
 			token = in.next();
@@ -200,8 +197,6 @@ class Game
 
 			child.dazed = in.nextInt();
 		}
-
-		Game.debug("child: " + child);
 	}
 
 	private void markChildren()
