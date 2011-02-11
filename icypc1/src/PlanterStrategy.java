@@ -22,7 +22,7 @@ class PlanterStrategy extends Strategy
 	// Various "repulsive factors"
 	final static double RF_ENEMY = 1.0;
 	final static double RF_FRIEND = 1.0;
-	final static double RF_WALL = 0.75;
+	final static double RF_WALL = 4.0;
 
     private int costOfNotBuilding = 0;
 

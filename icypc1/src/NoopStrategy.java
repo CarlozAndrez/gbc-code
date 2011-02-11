@@ -1,5 +1,4 @@
-
-public class NoopStrategy extends Strategy
+class NoopStrategy extends Strategy
 {
 
 	@Override
