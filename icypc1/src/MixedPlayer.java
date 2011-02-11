@@ -14,10 +14,12 @@ public class MixedPlayer
 {
     private static Point[] snowmanPositions = {new Point(7, 7), new Point(7, 24), new Point(24, 24), new Point(24, 7)};
 
+    private static Strategy[] strategy;
+
 	public static void main(String[] args)
 	{
 		Game game = new Game();
-		Strategy[] strategy = getInitialFieldStrategy(game);
+		strategy = getInitialFieldStrategy(game);
 
 		// Scanner to parse input from the game engine.
 		Scanner in = new Scanner(System.in);
@@ -25,21 +27,18 @@ public class MixedPlayer
 		// Keep reading states until the game ends.
 		while (game.readGameData(in))
 		{
-            assignPlanter(game, strategy, 0);
-            assignDefender(game, strategy, 1, 0);
-
-            ArrayList<Integer> visibleEnemyChildren = game.getVisibleEnemyChildren();
-            if (visibleEnemyChildren.size() > 0)
-            {
-                Integer enemyIndex = game.getNearestEnemyIndex(game.cList[2], visibleEnemyChildren);
-                visibleEnemyChildren.remove(enemyIndex);
-                assignHunter(game, strategy, 2, enemyIndex);
+            java.util.List<Integer> planters = new ArrayList<Integer>();
+            for (int i = 0; i <= 3; i++) {
+                if (strategy[i] instanceof PlanterStrategy)
+                {
+                    planters.add(i);
+                }
             }
-            if (visibleEnemyChildren.size() > 0)
-            {
-                Integer enemyIndex = game.getNearestEnemyIndex(game.cList[3], visibleEnemyChildren);
-                visibleEnemyChildren.remove(enemyIndex);
-                assignHunter(game, strategy, 3, enemyIndex);
+            for (Integer i : planters) {
+                if (strategy[i].voteOnBeingAPlanter(game, game.cList[i]) < 0.1) {
+                    pickHunterToBecomePlanter(game);
+                    assignHunter(game, strategy, i);
+                }
             }
 
 			// Decide what each child should do
@@ -51,23 +50,24 @@ public class MixedPlayer
 		}
 	}
 
+    private static void pickHunterToBecomePlanter(Game game) {
+        int hunterIndex = -1;
+        for (int i = 0; i <= 3; i++) {
+            if (strategy[i] instanceof HunterStrategy &&
+                    (strategy[i].voteOnBeingAPlanter(game, game.cList[i]) > 0.9 ||
+                        hunterIndex == -1))
+            {
+                hunterIndex = i;
+            }
+        }
+        assignPlanter(game, strategy, hunterIndex);
+    }
+
     private static void assignPlanter(Game game, Strategy[] sList, int childIndex)
     {
         if (!(sList[childIndex] instanceof PlanterStrategy))
         {
             sList[childIndex] = new PlanterStrategy();
-        }
-
-        if (!((PlanterStrategy) sList[childIndex]).isBuildingASnowman())
-        {
-            for (Point p : snowmanPositions)
-            {
-                if (!isRedSnowmanBuiltFor(p, 5, game))
-                {
-                    game.cList[childIndex].runTarget = p;
-                    break;
-                }
-            }
         }
     }
 
@@ -79,30 +79,11 @@ public class MixedPlayer
         }
     }
 
-    private static void assignHunter(Game game, Strategy[] sList, int childIndex, Point p)
+    private static void assignHunter(Game game, Strategy[] sList, int childIndex)
     {
         if (!(sList[childIndex] instanceof HunterStrategy))
         {
             sList[childIndex] = new HunterStrategy();
-        }
-
-        game.cList[childIndex].runTarget = p;
-    }
-
-    private static void assignHunter(Game game, Strategy[] sList, int childIndex, int enemyChildIndex)
-    {
-        if (!(sList[childIndex] instanceof HunterStrategy))
-        {
-            sList[childIndex] = new HunterStrategy();
-        }
-
-        if (game.cList[enemyChildIndex].canBeSeen())
-        {
-            game.cList[childIndex].runTarget = game.cList[enemyChildIndex].pos;
-        }
-        else
-        {
-            // ToDo:
         }
     }
 
@@ -111,9 +92,9 @@ public class MixedPlayer
         Strategy[] strategy = new Strategy[Game.CCOUNT];
 
         assignPlanter(game, strategy, 0);
-        assignDefender(game, strategy, 1, 0);
-        assignHunter(game, strategy, 2, new Point(10, 20));
-        assignHunter(game, strategy, 3, new Point(24, 8));
+        assignHunter(game, strategy, 1);
+        assignHunter(game, strategy, 2);
+        assignHunter(game, strategy, 3);
 
         return strategy;
     }

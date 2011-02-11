@@ -23,6 +23,9 @@ class PlanterStrategy extends Strategy
 	final static double RF_ENEMY = 1.2;
 	final static double RF_FRIEND = 1.0;
 	final static double RF_WALL = 1.0;
+
+    private int costOfNotBuilding = 0;
+
 	/**
 	 * sequence of moves templates to build a snowman to the right of the player. For
 	 * the first one, we're just looking for a place to build.
@@ -137,7 +140,12 @@ class PlanterStrategy extends Strategy
 
 	public Move chooseNextAction(Game game, Child child)
 	{
-		if (child.dazed > 0) return new Move();
+		if (child.dazed > 0)
+        {
+            costOfNotBuilding++;
+            costOfNotBuilding++;
+            return new Move();
+        }
 
 		if (!isBuildingASnowman())
 		{
@@ -155,15 +163,17 @@ class PlanterStrategy extends Strategy
 			
 			if (!isGoodPositionToBuild(game, child))
 			{
+                costOfNotBuilding++;
 				return moveToBuildingPosition(game, child);
 			}
-			
+
 			// We're not holding anything and we are in a good position to build.
 			state = 1;
 		}
 
 		// We should only arrive here if we are inGoodPositionToBuild() or we 
 		// are already in the process of building a snowman.
+        costOfNotBuilding = 0;
 		
         // Stamp out a move from our instruction template and return it.
         Move m = new Move(instructions[state].action);
@@ -180,5 +190,17 @@ class PlanterStrategy extends Strategy
     public boolean isBuildingASnowman() 
     {
         return state != 0;
+    }
+
+    protected double voteOnBeingAPlanter(Game game, Child me) {
+        if (isBuildingASnowman()) {
+            return 1.0;
+        }
+        else if (costOfNotBuilding < 17) {
+            return 1.0;
+        }
+        else {
+            return 0.0;
+        }
     }
 }

@@ -210,4 +210,11 @@ class HunterStrategy extends Strategy
 		return moveToward(game, me, new Point(game.makeRandomNumber(0, Game.SIZE), game.makeRandomNumber(0, Game.SIZE)));	
 	}
 
+    protected double voteOnBeingAPlanter(Game game, Child me) {
+        // vote to become a Planter if empty handed
+        if (me.holding == Game.HOLD_EMPTY)
+            return 1.0;
+        else
+            return 0.0;
+    }
 }
