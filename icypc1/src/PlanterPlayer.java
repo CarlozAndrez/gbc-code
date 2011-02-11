@@ -18,6 +18,10 @@ public class PlanterPlayer
 		for (int nchild = 0; nchild < Game.CCOUNT; nchild++)
 			strategy[nchild] = new PlanterStrategy();
 		
+		// Debug
+//		strategy[0] = new NoopStrategy();
+//		strategy[1] = new NoopStrategy();
+		
 		// Scanner to parse input from the game engine.
 		Scanner in = new Scanner(System.in);
 
