@@ -173,7 +173,7 @@ class PlanterStrategy extends Strategy
 
 		// We should only arrive here if we are inGoodPositionToBuild() or we 
 		// are already in the process of building a snowman.
-        costOfNotBuilding = 0;
+        costOfNotBuilding -= 2;
 		
         // Stamp out a move from our instruction template and return it.
         Move m = new Move(instructions[state].action);

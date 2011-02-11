@@ -349,10 +349,7 @@ class HunterStrategy extends Strategy
 	}
 
     protected double voteOnBeingAPlanter(Game game, Child me) {
-        // vote to become a Planter if empty handed
-        if (me.holding == Game.HOLD_EMPTY)
-            return 1.0;
-        else
-            return 0.0;
+        // return a higher score if further from opponents
+        return game.getDistanceToNearestEnemy(me) / Game.SIZE;
     }
 }

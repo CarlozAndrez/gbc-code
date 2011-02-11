@@ -196,6 +196,10 @@ class Game
 			child.holding = token.charAt(0) - 'a';
 
 			child.dazed = in.nextInt();
+            if (child.dazed > 0)
+                child.dazedTurnsList.add(1);
+            else
+                child.dazedTurnsList.add(0);
 		}
 	}
 
@@ -317,11 +321,20 @@ class Game
         return visibleEnemyChildren;
     }
 
+    public double getDistanceToNearestEnemy(Child child) {
+        int nearestEnemy = getNearestEnemyIndex(child, getVisibleEnemyChildren());
+        if (nearestEnemy != -1)
+            return getDistance(child.pos, cList[nearestEnemy].pos);
+        else
+            return Game.SIZE;
+    }
+
+    // returns -1 if no enemy children are visible
     public int getNearestEnemyIndex(Child child, ArrayList<Integer> visibleEnemyChildren)
     {
         double distance = 999;
         int dazedCount = 999; // todo: consider dazed values
-        int index = visibleEnemyChildren.get(0);
+        int index = -1;
         for (Integer i : visibleEnemyChildren)
         {
             double pDistance = getDistance(child.pos, cList[i].pos);
