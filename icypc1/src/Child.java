@@ -47,8 +47,10 @@ class Child
 
     public int getNumberOfRecentDazedTurns(int numTurns) {
         int num = 0;
-        for (Integer value : dazedTurnsList) {
-            num += value;
+        if (dazedTurnsList.size() >= numTurns) {
+            for (int i = 1; i <= numTurns; i++) {
+                num += dazedTurnsList.get(dazedTurnsList.size() - i);
+            }
         }
         return num;
     }

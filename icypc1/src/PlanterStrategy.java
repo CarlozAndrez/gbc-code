@@ -24,7 +24,7 @@ class PlanterStrategy extends Strategy
 	final static double RF_FRIEND = 1.0;
 	final static double RF_WALL = 4.0;
 
-    private int costOfNotBuilding = 0;
+    private int numMovesNotBuilding = 0;
 
 	/**
 	 * sequence of moves templates to build a snowman to the right of the player. For
@@ -51,7 +51,7 @@ class PlanterStrategy extends Strategy
 	/** Current instruction this child is executing. */
 	private int state = 0;
 	
-	private boolean isGoodPositionToBuild(Game game, Child child)
+	static boolean isGoodPositionToBuild(Game game, Child child)
 	{
 		// Find the nearest neighbor.
 		int nearDist = game.findNearestNeighbor(child.pos);
@@ -142,8 +142,6 @@ class PlanterStrategy extends Strategy
 	{
 		if (child.dazed > 0)
         {
-            costOfNotBuilding++;
-            costOfNotBuilding++;
             return new Move();
         }
 
@@ -163,7 +161,7 @@ class PlanterStrategy extends Strategy
 			
 			if (!isGoodPositionToBuild(game, child))
 			{
-                costOfNotBuilding++;
+                numMovesNotBuilding++;
 				return moveToBuildingPosition(game, child);
 			}
 
@@ -173,7 +171,7 @@ class PlanterStrategy extends Strategy
 
 		// We should only arrive here if we are inGoodPositionToBuild() or we 
 		// are already in the process of building a snowman.
-        costOfNotBuilding -= 2;
+        numMovesNotBuilding = 0;
 		
         // Stamp out a move from our instruction template and return it.
         Move m = new Move(instructions[state].action);
@@ -193,10 +191,12 @@ class PlanterStrategy extends Strategy
     }
 
     protected double voteOnBeingAPlanter(Game game, Child me) {
-        if (isBuildingASnowman()) {
+        if(me.getNumberOfRecentDazedTurns(10) > 6)
+            return 0.0;
+        else if (isBuildingASnowman()) {
             return 1.0;
         }
-        else if (costOfNotBuilding < 17) {
+        else if (numMovesNotBuilding < 17) {
             return 1.0;
         }
         else {
