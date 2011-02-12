@@ -54,6 +54,19 @@ public class MixedPlayer
                     planters.remove((Integer) index);
                 }
             }
+            else // only 1 planter
+            {
+                for (int i = 0; i <= 3; i++) {
+                    if (strategy[i] instanceof HunterStrategy)
+                    {
+                        if (game.cList[i].getNumberOfRecentDazedTurns(10) == 0 &&
+                                PlanterStrategy.isGoodPositionToBuild(game, game.cList[i]))
+                        {
+                            assignPlanter(game, strategy, i);
+                        }
+                    }
+                }
+            }
 
             // consider reassigning planters to hunters
             for (Integer i : planters) {
@@ -114,7 +127,7 @@ public class MixedPlayer
 
         assignPlanter(game, strategy, 0);
         assignPlanter(game, strategy, 1);
-        assignHunter(game, strategy, 2);
+        assignPlanter(game, strategy, 2);
         assignHunter(game, strategy, 3);
 
         return strategy;

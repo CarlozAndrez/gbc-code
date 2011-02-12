@@ -15,6 +15,14 @@ class HunterStrategy extends Strategy
 	@Override
     public Move chooseNextAction(Game game, Child me)
     {
+        if (me.holding != Game.HOLD_EMPTY
+                && me.holding != Game.HOLD_P1
+                && me.holding != Game.HOLD_S1
+                && me.pos.y < Game.SIZE - 1
+                && game.height[me.pos.x][me.pos.y + 1] <= Game.MAX_PILE - 3)
+        {
+            return new Move("drop", me.pos.x, me.pos.y + 1);
+        }
 		Move m = new Move();
 		Child victim;
 		if (me.dazed == 0)
